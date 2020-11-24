@@ -26,7 +26,10 @@ class RESTTodoRepository implements TodoRepository {
     if (response.statusCode != 200) {
       throw Exception(response.body);
     }
-    final todoList = jsonDecode(response.body).cast<Map<String, dynamic>>()
+    // final todoList =
+    //     List<Map<String, dynamic>>.from(json.decode(response.body));
+
+    final todoList = json.decode(response.body).cast<Map<String, dynamic>>()
         as List<Map<String, dynamic>>;
     return todoList.map((e) => Todo.fromMap(e)).toList();
   }

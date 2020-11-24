@@ -15,8 +15,11 @@ class RESTUserRepository implements UserRepository {
       'Authorization': kAuthorizationToken,
     });
 
-    final userList = jsonDecode(response.body).cast<Map<String, dynamic>>()
+    // final userList =
+    //     List<Map<String, dynamic>>.from(json.decode(response.body));
+    final userList = json.decode(response.body).cast<Map<String, dynamic>>()
         as List<Map<String, dynamic>>;
+
     return userList.map((e) => User.fromMap(e)).toList();
   }
 

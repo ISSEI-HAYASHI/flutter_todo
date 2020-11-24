@@ -17,8 +17,9 @@ class RESTProjectRepository implements ProjectRepository {
     final response = await http.get("$kProjectAPIUrl", headers: {
       'Authorization': kAuthorizationToken,
     });
-    // print(response.statusCode);
-    final prjList = jsonDecode(response.body).cast<Map<String, dynamic>>()
+    // final prjList = List<Map<String, dynamic>>.from(json.decode(response.body));
+
+    final prjList = json.decode(response.body).cast<Map<String, dynamic>>()
         as List<Map<String, dynamic>>;
     return prjList.map((e) => Project.fromMap(e)).toList();
   }

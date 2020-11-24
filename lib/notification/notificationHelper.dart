@@ -4,31 +4,29 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:todo_app/models/reminderNotification.dart';
 import 'package:rxdart/subjects.dart';
 
-final BehaviorSubject<ReminderNotification> didReceiveLocalNotificationSubject = BehaviorSubject<ReminderNotification>();
-final BehaviorSubject<String> selectNotificationSubject = BehaviorSubject<String>();
+final BehaviorSubject<ReminderNotification> didReceiveLocalNotificationSubject =
+    BehaviorSubject<ReminderNotification>();
+final BehaviorSubject<String> selectNotificationSubject =
+    BehaviorSubject<String>();
 
-Future<void> initNotifications(FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin) async {
-  var initializationSettingsAndroid = AndroidInitializationSettings('demia_logo_clear');
+Future<void> initNotifications(
+    FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin) async {
+  var initializationSettingsAndroid =
+      AndroidInitializationSettings('demia_logo');
   var initializationSettingsIOS = IOSInitializationSettings(
-    requestAlertPermission: false,
-    requestBadgePermission: false,
-    requestSoundPermission: false,
-      onDidReceiveLocalNotification: (int id, String title, String body, String payload) async {
-      didReceiveLocalNotificationSubject.add(ReminderNotification(
-          id: id,
-          title: title,
-          body: body,
-          payload: payload
-      ));
-    });
+      requestAlertPermission: false,
+      requestBadgePermission: false,
+      requestSoundPermission: false,
+      onDidReceiveLocalNotification:
+          (int id, String title, String body, String payload) async {
+        didReceiveLocalNotificationSubject.add(ReminderNotification(
+            id: id, title: title, body: body, payload: payload));
+      });
   var initializationSettings = InitializationSettings(
-    android: initializationSettingsAndroid,
-    iOS: initializationSettingsIOS
-  );
+      android: initializationSettingsAndroid, iOS: initializationSettingsIOS);
   await flutterLocalNotificationsPlugin.initialize(
     initializationSettings,
-    onSelectNotification:
-        (String payload) async {
+    onSelectNotification: (String payload) async {
       if (payload != null) {
         debugPrint('notification payload: ' + payload);
       }
@@ -38,12 +36,15 @@ Future<void> initNotifications(FlutterLocalNotificationsPlugin flutterLocalNotif
 }
 
 //すべての通知を削除
-Future<void> turnOffNotification(FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin) async {
+Future<void> turnOffNotification(
+    FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin) async {
   await flutterLocalNotificationsPlugin.cancelAll();
 }
 
 //一致するidの通知を削除
-Future<void> turnOffNotificationById(FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin, num id) async {
+Future<void> turnOffNotificationById(
+    FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin,
+    num id) async {
   await flutterLocalNotificationsPlugin.cancel(id);
 }
 
@@ -53,27 +54,23 @@ Future<void> scheduleNotification(
     int id,
     String title,
     String body,
-    DateTime scheduledNotificationDateTime
-  ) async {
-
+    DateTime scheduledNotificationDateTime) async {
   // 通知の詳細を設定
   var androidPlatformChannelSpecifics = AndroidNotificationDetails(
     id.toString(),
     'Reminder notifications',
     'Remember about it',
-    icon: 'demia_logo_clear',
+    icon: 'assets/icon/demia_logo',
     // color: Colors.lightGreen,
     enableLights: true,
     enableVibration: true,
     fullScreenIntent: true,
     // visibility: true,
-
   );
   var iOSPlatformChannelSpecifics = IOSNotificationDetails();
   var platformChannelSpecifics = NotificationDetails(
-    android: androidPlatformChannelSpecifics,
-    iOS: iOSPlatformChannelSpecifics
-  );
+      android: androidPlatformChannelSpecifics,
+      iOS: iOSPlatformChannelSpecifics);
   await flutterLocalNotificationsPlugin.schedule(
     // ここのidが通知のひとつひとつを管理している
     // ＞現状はひとつの予定につき1個しか設定できない状態
@@ -85,13 +82,14 @@ Future<void> scheduleNotification(
   );
 }
 
-void requestIOSPermissions(FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin) {
+void requestIOSPermissions(
+    FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin) {
   flutterLocalNotificationsPlugin
       .resolvePlatformSpecificImplementation<
-      IOSFlutterLocalNotificationsPlugin>()
+          IOSFlutterLocalNotificationsPlugin>()
       ?.requestPermissions(
-    alert: true,
-    badge: true,
-    sound: true,
-  );
+        alert: true,
+        badge: true,
+        sound: true,
+      );
 }
