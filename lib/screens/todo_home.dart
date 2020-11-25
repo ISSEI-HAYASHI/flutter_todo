@@ -1,6 +1,5 @@
 import 'dart:async';
 
-
 import 'package:flutter/material.dart';
 // import 'package:flutter/semantics.dart';
 import 'package:todo_app/models/todo.dart';
@@ -38,27 +37,6 @@ class _TodoHomeScreenState extends State<TodoHomeScreen> {
       key: _key,
       appBar: AppBar(
         title: const Text('Todo App'),
-        // actions: [
-        //   _currentIndex != 2
-        //       ? IconButton(
-        //           icon: Icon(
-        //             Icons.search,
-        //             color: Colors.white,
-        //           ),
-        //           onPressed: () {
-        //             showMaterialModalBottomSheet(
-        //               context: context,
-        //               builder: (context, scrollController) => SizedBox(
-        //                 height: 400,
-        //                 child: TodoSearchWidget(
-        //                   todos: _todos,
-        //                   currentIndex: _currentIndex,
-        //                 ),
-        //               ),
-        //             );
-        //           })
-        //       : Container()
-        // ],
       ),
       body: _widgetOptions[_currentIndex],
       floatingActionButton: _currentIndex != 2
@@ -73,7 +51,7 @@ class _TodoHomeScreenState extends State<TodoHomeScreen> {
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Todo'),
           BottomNavigationBarItem(icon: Icon(Icons.done), label: 'Done'),
-          BottomNavigationBarItem(icon: Icon(Icons.settings), label: "setting"),
+          BottomNavigationBarItem(icon: Icon(Icons.settings), label: "Setting"),
         ],
         currentIndex: _currentIndex,
         onTap: (value) {
@@ -131,21 +109,7 @@ abstract class TodoListStateBase extends State<TodoListBase> {
                                     textColor: Colors.white,
                                     child: const Text("検索"),
                                     onPressed: () {
-                                      if (_formKey.currentState.validate()) {
-                                        _formKey.currentState.save();
-                                        Navigator.pop(context);
-                                        setState(() {
-                                          _todos = RESTTodoRepository()
-                                              .retrieveTodos(
-                                                  users: _searchedUserIDs,
-                                                  prjs: _searchedProjectIDs,
-                                                  done: _currentIndex == 0
-                                                      ? false
-                                                      : true);
-                                          _searchedUserIDs = [];
-                                          _searchedProjectIDs = [];
-                                        });
-                                      }
+                                      _setStateAfterSearch(_formKey);
                                     },
                                   ),
                                 ),
@@ -184,8 +148,6 @@ abstract class TodoListStateBase extends State<TodoListBase> {
                                                           initialValue: false,
                                                           onSaved: (value) {
                                                             if (value) {
-                                                              print(
-                                                                  "user checked field");
                                                               _searchedUserIDs
                                                                   .add(user.id);
                                                             }
@@ -274,10 +236,23 @@ abstract class TodoListStateBase extends State<TodoListBase> {
     );
   }
 
-  // Future<List<Todo>> getTodos();
-
   void Function(DismissDirection) generateOnDismissedFunc(
       List<Todo> todos, Todo todo, int index);
+
+  void _setStateAfterSearch(_formKey) async {
+    if (_formKey.currentState.validate()) {
+      await _formKey.currentState.save();
+      setState(() {
+        _todos = RESTTodoRepository().retrieveTodos(
+            users: _searchedUserIDs,
+            prjs: _searchedProjectIDs,
+            done: _currentIndex == 0 ? false : true);
+        _searchedUserIDs = [];
+        _searchedProjectIDs = [];
+      });
+      Navigator.pop(context);
+    }
+  }
 }
 
 class TodoList extends TodoListBase {
@@ -308,27 +283,41 @@ class TodoListState extends TodoListStateBase {
   void Function(DismissDirection) generateOnDismissedFunc(
       List<Todo> todos, Todo todo, int index) {
     final String userID = kUserID;
-    if (userID != todo.personID) {
-      String message = "not your todo.";
-      setState(() {
-        key.currentState
-          ..hideCurrentSnackBar()
-          ..showSnackBar(
-            SnackBar(
-              content: Text('“${todo.title}” was $message.'),
-            ),
-          );
-      });
-    }
     return (direction) {
       String message;
       switch (direction) {
         case DismissDirection.startToEnd:
+          if (userID != todo.personID) {
+            String message = "not your todo.";
+            setState(() {
+              key.currentState
+                ..hideCurrentSnackBar()
+                ..showSnackBar(
+                  SnackBar(
+                    content: Text('“${todo.title}” was $message.'),
+                  ),
+                );
+            });
+          }
+
           todo.done = true;
           RESTTodoRepository().updateTodo(todo);
           message = 'done';
           break;
         case DismissDirection.endToStart:
+          if (userID != todo.personID) {
+            String message = "not your todo.";
+            setState(() {
+              key.currentState
+                ..hideCurrentSnackBar()
+                ..showSnackBar(
+                  SnackBar(
+                    content: Text('“${todo.title}” was $message.'),
+                  ),
+                );
+            });
+          }
+
           RESTTodoRepository().deleteTodo(todo);
           message = 'deleted';
           break;
