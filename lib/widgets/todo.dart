@@ -300,10 +300,10 @@ class _TodoEditFormState extends State<TodoEditForm> {
                     hintText: "Choose a project.",
                     value: _prjValue,
                     onChanged: (value) {
+                      print(value);
                       setState(() {
                         _prjValue = value;
                         _todo.projectID = value;
-                        print(_todo.projectID);
                       });
                     },
                     dataSource: snapshot.data,
